@@ -21,7 +21,7 @@ fieldhash my %subcountry_file => 'subcountry_file';
 fieldhash my %templater       => 'templater';
 fieldhash my %web_page_file   => 'web_page_file';
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 # -----------------------------------------------
 
@@ -113,11 +113,12 @@ sub as_html
 
 	print OUT $self -> templater -> render
 		(
-		 'iso3166.report.tx',
-		 {
-			 country_data => $self -> build_country_data,
-			 default_css  => "$$config{_}{css_url}/default.css",
-		 }
+			'iso3166.report.tx',
+			{
+				country_data => $self -> build_country_data,
+				default_css  => "$$config{_}{css_url}/default.css",
+				version      => $VERSION,
+			}
 		);
 
 	close OUT;
