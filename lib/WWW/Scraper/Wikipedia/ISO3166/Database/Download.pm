@@ -1,8 +1,13 @@
 package WWW::Scraper::Wikipedia::ISO3166::Database::Download;
 
 use parent 'WWW::Scraper::Wikipedia::ISO3166::Database';
+use feature 'say';
 use strict;
+use utf8;
 use warnings;
+use warnings  qw(FATAL utf8);    # Fatalize encoding glitches.
+use open      qw(:std :utf8);    # Undeclared streams in UTF-8.
+use charnames qw(:full :short);  # Unneeded in v5.16.
 
 use Hash::FieldHash ':all';
 
@@ -18,6 +23,7 @@ our $VERSION = '1.01';
 sub get_1_page
 {
 	my($self, $url, $data_file) = @_;
+
 	my($response) = HTTP::Tiny -> new -> get($url);
 
 	if (! $$response{success})
@@ -66,6 +72,67 @@ sub get_country_pages
 	return $result || $self -> get_1_page($self -> url, $self -> data_file . '.html');
 
 } # End of get_country_pages.
+
+# -----------------------------------------------
+
+sub get_fips_pages
+{
+	my($self)     = @_;
+	my(@url)      = (qw/A-C D-F G-I J-L M-O P-R S-U V-Z/);
+	my($base_url) = 'http://en.wikipedia.org/wiki/List_of_FIPS_region_codes_';
+
+	my($real_url, $result, $random);
+
+	for my $url (@url)
+	{
+		$real_url = "$base_url($url)";
+		$result   = $self -> get_1_page($real_url, "data/List_of_FIPS_region_codes_$url.html");
+
+		for (;;)
+		{
+			last if ( ($random = int(rand(500) ) ) > 35);
+		}
+
+		say "Sleeping for $random seconds";
+
+		sleep $random;
+	}
+
+	return $result;
+
+} # End of get_fips_pages.
+
+# -----------------------------------------------
+
+sub get_statoids_pages
+{
+	my($self) = @_;
+	my(@url)  = (qw/
+la.html  lb.html lc.html  ldf.html lg.html lhj.html
+lkl.html lm.html lno.html lpr.html ls.html ltu.html lvz.html
+/);
+	my($base_url) = 'http://statoids.com';
+
+	my($real_url, $result, $random);
+
+	for my $url (@url)
+	{
+		$real_url = "$base_url/$url";
+		$result   += $self -> get_1_page($real_url, "statoids/statoids.$url");
+
+		for (;;)
+		{
+			last if ( ($random = int(rand(500) ) ) > 35);
+		}
+
+		say "Sleeping for $random seconds";
+
+		sleep $random;
+	}
+
+	return $result;
+
+} # End of get_statoids_pages.
 
 # -----------------------------------------------
 

@@ -1,6 +1,6 @@
 package WWW::Scraper::Wikipedia::ISO3166;
 
-use 5.008;
+require v5.14.0;
 use strict;
 use warnings;
 
@@ -15,7 +15,7 @@ fieldhash my %share_dir    => 'share_dir';
 fieldhash my %sqlite_file  => 'sqlite_file';
 fieldhash my %verbose      => 'verbose';
 
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 # -----------------------------------------------
 
@@ -82,6 +82,8 @@ sub run
 =head1 NAME
 
 WWW::Scraper::Wikipedia::ISO3166 - Gently scrape Wikipedia for ISO3166-2 data
+
+=encoding utf-8
 
 =head1 Synopsis
 
@@ -229,6 +231,21 @@ Input: share/www.scraper.wikipedia.iso3166.sqlite.
 Output: data/iso.3166-2.html.
 
 On-line: L<http://savage.net.au/Perl-modules/html/WWW/Scraper/Wikipedia/ISO3166/iso.3166-2.html>.
+
+=item o scripts/get.statoids.pl
+
+Downloads some pages from L<http://statoids.com> in case one day we need to convert from FIPS to ISO 3166-2.
+
+See data/List_of_FIPS_region_codes_*.html.
+
+=item o scripts/populate.fips.codes.pl
+
+This reads the files output by scripts/get.statoids.pl and produces 2 reports, data/wikipedia.fips.codes.txt
+and data/wikipedia.fips.mismatch.log. These are discussed in L</What FIPS data is included?>
+
+=item o scripts/test.nfc.pl
+
+See L</Why did you use L<Unicode::Normalize>'s NFC() for sorting?> for a discussion of this script.
 
 =back
 
@@ -384,7 +401,7 @@ For fc(), see L<Unicode::CaseFold/fc($str)>.
 
 $name is from a Wikipedia page.
 
-I<has_subcountries> is 'Yes' or 'No.
+I<has_subcountries> is 'Yes' or 'No'.
 
 I<name> is output from calling decode('utf8', $name).
 
@@ -479,13 +496,23 @@ AFAICT, sqlite3 does not have command line options, or options while running, to
 
 =head2 Why did you use L<Unicode::Normalize>'s NFC() for sorting?
 
-See section 1.2 Normalization Forms in L<http://www.unicode.org/reports/tr15/>.
+This question implies why not use NFD() instead.
 
-If you dump data, e.g. country name where code2 = 'AX', using both NFC() and NFD(), you get (respectively):
+Run scripts/test.nfc.pl, and the output is:
 
-Åland Islands and Ãland Islands
+	code2 => AX
+	code3 => ALA
+	fc_name => Ã¥land islands
+	has_subcountries => No
+	id => 15
+	name => Ã…land Islands
+	timestamp => 2012-05-13 23:37:20
 
-I assume the first one is correct, because that's what Wikipedia displays. So, NFC() it is.
+And this (Ã…land Islands) is what Wikipedia displays. So, NFC() it is.
+
+See L<http://www.perl.com/pub/2012/04>, and specifically prescription # 1.
+
+See also section 1.2 Normalization Forms in L<http://www.unicode.org/reports/tr15/>.
 
 See also L<http://www.unicode.org/faq/normalization.html>.
 
@@ -496,6 +523,16 @@ database tables. After installation, the database is elsewhere, and read-only, s
 writing to that copy anyway.
 
 At run-time, L<File::ShareDir> is used to find the installed version of *.sqlite.
+
+=head2 What FIPS data is included?
+
+Firstly, scripts/get.fips.pages.pl downloads some Wikipedia data, into data/List_of_FIPS_region_codes_*.html.
+
+Secondly, the latter files are parsed by scripts/populate.fips.codes.pl and the 2 reports are in
+data/wikipedia.fips.codes.txt, and data/wikipedia.fips.mismatch.log.
+
+This data is I<not> written into the SQLite database yet, but it's available in case it's included
+one day.
 
 =head1 Wikipedia's Terms of Use
 

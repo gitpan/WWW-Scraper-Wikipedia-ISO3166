@@ -10,7 +10,7 @@ use charnames qw(:full :short);  # Unneeded in v5.16.
 
 use Getopt::Long;
 
-use WWW::Scraper::Wikipedia::ISO3166::Database::Import;
+use WWW::Scraper::Wikipedia::ISO3166::Database::Download;
 
 use Pod::Usage;
 
@@ -29,7 +29,7 @@ if ($option_parser -> getoptions
 {
 	pod2usage(1) if ($option{'help'});
 
-	exit WWW::Scraper::Wikipedia::ISO3166::Database::Import -> new(%option) -> populate_countries;
+	exit WWW::Scraper::Wikipedia::ISO3166::Database::Download -> new(%option) -> get_fips_pages;
 }
 else
 {
@@ -42,11 +42,11 @@ __END__
 
 =head1 NAME
 
-populate.countries.pl - Parse en.wikipedia.org.wiki.ISO_3166-2.html
+get.fips.pages.pl - Get all country pages from https://en.wikipedia.org/wiki/List_of_FIPS_region_codes_(A-C) etc.
 
 =head1 SYNOPSIS
 
-populate.countries.pl [options]
+get.fips.pages.pl [options]
 
 	Options:
 	-help
@@ -56,11 +56,9 @@ All switches can be reduced to a single letter.
 
 Exit value: 0.
 
-Default input: data/en.wikipedia.org.wiki.ISO_3166-2.html.
+Input: https://en.wikipedia.org/wiki/List_of_FIPS_region_codes_(A-C) etc
 
-This is output by scripts/get.country.page.pl.
-
-Default output: share/www.scraper.wikipedia.iso3166.sqlite.
+Output: data/https://List_of_FIPS_region_codes_(A-C).html etc
 
 =head1 OPTIONS
 
@@ -70,14 +68,9 @@ Default output: share/www.scraper.wikipedia.iso3166.sqlite.
 
 Print help and exit.
 
-=item -verbose => $integer
+=item -verbose => $Boolean
 
-Print more or less progress reports. Details (more-or-less):
-
-	0: Print nothing.
-	1: Warnings, or anything I'm working on.
-	2: The country table and specials table.
-	3: The kinds of subcountries encountered. See comments in code re 'verbose > 2'.
+Print more or less progress reports.
 
 Default: 0.
 
